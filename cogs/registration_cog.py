@@ -340,12 +340,8 @@ class AvatarModal(Modal, title="Character Photo"):
     async def on_submit(self, interaction: discord.Interaction):
         reg_data = interaction.client.temp_registration_data
         reg_data.avatar_url = self.avatar_url.value.strip() if self.avatar_url.value else None
-        await self.show_summary(interaction)
 
-    async def show_summary(self, interaction: discord.Interaction):
-        """Show registration summary"""
-        reg_data = interaction.client.temp_registration_data
-
+        # Show summary
         description = (
             "\"Does this look right?\"\n\n"
             "The clerk slips you a shiny new ID with your information."
@@ -374,7 +370,7 @@ class AvatarModal(Modal, title="Character Photo"):
         embed.set_footer(text="Choose an option below")
 
         view = ConfirmationView()
-        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
 class AvatarStepView(View):
