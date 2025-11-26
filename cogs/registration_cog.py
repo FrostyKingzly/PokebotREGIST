@@ -41,7 +41,7 @@ class RegistrationModal(discord.ui.Modal, title="Trainer Registration"):
     )
 
     avatar_url = discord.ui.TextInput(
-        label="Submit a photo of yourself, please (image URL, optional)",
+        label="Character Photo URL (optional)",
         placeholder="Paste a link to an image of your character...",
         required=False,
         max_length=200,
