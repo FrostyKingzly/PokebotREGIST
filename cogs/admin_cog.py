@@ -14,6 +14,7 @@ from typing import Optional, Dict
 from guild_config import set_rank_announcement_channel
 
 from models import Pokemon
+from sprite_helper import PokemonSpriteHelper
 from social_stats import (
     SOCIAL_STAT_DEFINITIONS,
     SOCIAL_STAT_ORDER,
@@ -117,90 +118,24 @@ class AdminCog(commands.Cog):
             
             # Add to party or box
             pokemon_id = self.bot.player_manager.add_pokemon_to_party(pokemon)
-            
-            # Create success embed
+
+            # Create simplified embed with sprite
+            display_name = pokemon.get_display_name()
+            shiny_indicator = "✨ " if pokemon.is_shiny else ""
+
             embed = discord.Embed(
-                title="✅ Pokemon Given!",
-                description=f"Gave **{pokemon.get_display_name()}** to {user.mention}",
-                color=discord.Color.green()
+                description=f"{shiny_indicator}{user.mention} received **{display_name}**!",
+                color=discord.Color.gold() if pokemon.is_shiny else discord.Color.green()
             )
-            
-            # Add Pokemon details
-            embed.add_field(
-                name="Species",
-                value=f"{pokemon.species_name} (Lv. {pokemon.level})",
-                inline=True
+
+            # Add Pokemon sprite (Gen 5 animated with Gen 5 static fallback)
+            sprite_url = PokemonSpriteHelper.get_sprite(
+                pokemon.species_name,
+                species_data['dex_number'],
+                style='animated'
             )
-            
-            if pokemon.nickname:
-                embed.add_field(
-                    name="Nickname",
-                    value=pokemon.nickname,
-                    inline=True
-                )
-            
-            embed.add_field(
-                name="Nature",
-                value=pokemon.nature.title(),
-                inline=True
-            )
-            
-            embed.add_field(
-                name="Ability",
-                value=pokemon.ability.replace('_', ' ').title(),
-                inline=True
-            )
-            
-            if pokemon.held_item:
-                embed.add_field(
-                    name="Held Item",
-                    value=pokemon.held_item.replace('_', ' ').title(),
-                    inline=True
-                )
-            
-            if pokemon.is_shiny:
-                embed.add_field(
-                    name="Shiny",
-                    value="âœ¨ Yes!",
-                    inline=True
-                )
-            
-            if pokemon.tera_type:
-                embed.add_field(
-                    name="Tera Type",
-                    value=pokemon.tera_type.title(),
-                    inline=True
-                )
-            
-            # IVs
-            iv_str = " / ".join([f"{v} {k.upper()}" for k, v in pokemon.ivs.items()])
-            embed.add_field(
-                name="IVs",
-                value=iv_str,
-                inline=False
-            )
-            
-            # EVs (only show if non-zero)
-            ev_total = sum(pokemon.evs.values())
-            if ev_total > 0:
-                ev_list = [f"{v} {k.title()}" for k, v in pokemon.evs.items() if v > 0]
-                ev_str = " / ".join(ev_list)
-                embed.add_field(
-                    name=f"EVs ({ev_total} total)",
-                    value=ev_str,
-                    inline=False
-                )
-            
-            # Moves
-            move_names = [m['move_id'].replace('_', ' ').title() for m in pokemon.moves]
-            embed.add_field(
-                name="Moves",
-                value="\n".join([f"â€¢ {m}" for m in move_names]),
-                inline=False
-            )
-            
-            embed.set_footer(text=f"Pokemon ID: {pokemon_id}")
-            
+            embed.set_image(url=sprite_url)
+
             await interaction.response.send_message(embed=embed)
             
         except Exception as e:
