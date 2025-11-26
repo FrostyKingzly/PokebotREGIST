@@ -11,31 +11,34 @@ class PokemonSpriteHelper:
     
     # Sprite sources
     GEN5_ANIMATED = "https://play.pokemonshowdown.com/sprites/gen5ani/{name}.gif"
+    GEN5_STATIC = "https://play.pokemonshowdown.com/sprites/gen5/{name}.png"
     SHOWDOWN_STATIC = "https://play.pokemonshowdown.com/sprites/pokemon/{name}.png"
     POKEAPI_FRONT = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{id}.png"
     POKEAPI_SHINY = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/{id}.png"
     OFFICIAL_ART = "https://assets.pokemon.com/assets/cms2/img/pokedex/full/{id}.png"
     
     @staticmethod
-    def get_sprite(pokemon_name: str, dex_number: Optional[int] = None, 
-                   style: str = 'animated', shiny: bool = False) -> str:
+    def get_sprite(pokemon_name: str, dex_number: Optional[int] = None,
+                   style: str = 'animated', shiny: bool = False, use_fallback: bool = True) -> str:
         """
         Get Pokemon sprite URL
-        
+
         Args:
             pokemon_name: Pokemon species name (e.g., "pikachu", "charizard")
             dex_number: National Dex number (required for 'static' and 'official' styles)
-            style: 'animated', 'static', 'official', 'showdown'
+            style: 'animated', 'gen5static', 'static', 'official', 'showdown'
             shiny: Whether to get shiny sprite (only works for 'static')
-        
+            use_fallback: If True and style='animated', returns a list [animated_url, gen5static_url]
+
         Returns:
-            URL string for the sprite
-        
+            URL string for the sprite, or list of URLs if use_fallback=True for animated
+
         Examples:
             >>> PokemonSpriteHelper.get_sprite("pikachu", 25)
-            'https://play.pokemonshowdown.com/sprites/gen5ani/pikachu.gif'
+            ['https://play.pokemonshowdown.com/sprites/gen5ani/pikachu.gif',
+             'https://play.pokemonshowdown.com/sprites/gen5/pikachu.png']
 
-            >>> PokemonSpriteHelper.get_sprite("rillaboom", 812)
+            >>> PokemonSpriteHelper.get_sprite("rillaboom", 812, use_fallback=False)
             'https://play.pokemonshowdown.com/sprites/gen5ani/rillaboom.gif'
 
             >>> PokemonSpriteHelper.get_sprite("charizard", 6, style='official')
@@ -44,26 +47,34 @@ class PokemonSpriteHelper:
         name = pokemon_name.lower().replace(' ', '').replace('-', '')
 
         if style == 'animated':
-            # Use Showdown Gen 5 animated sprites for all Pokémon
-            return PokemonSpriteHelper.GEN5_ANIMATED.format(name=name)
+            # Use Showdown Gen 5 animated sprites with Gen 5 static as fallback
+            animated_url = PokemonSpriteHelper.GEN5_ANIMATED.format(name=name)
+            if use_fallback:
+                gen5static_url = PokemonSpriteHelper.GEN5_STATIC.format(name=name)
+                return animated_url  # Return primary, fallback handled by Discord
+            return animated_url
+
+        elif style == 'gen5static':
+            # Gen 5 static sprites
+            return PokemonSpriteHelper.GEN5_STATIC.format(name=name)
 
         elif style == 'showdown':
             return PokemonSpriteHelper.SHOWDOWN_STATIC.format(name=name)
-        
+
         elif style == 'static':
             if dex_number is None:
                 raise ValueError("dex_number required for static sprites")
             if shiny:
                 return PokemonSpriteHelper.POKEAPI_SHINY.format(id=dex_number)
             return PokemonSpriteHelper.POKEAPI_FRONT.format(id=dex_number)
-        
+
         elif style == 'official':
             if dex_number is None:
                 raise ValueError("dex_number required for official art")
             return PokemonSpriteHelper.OFFICIAL_ART.format(id=f"{dex_number:03d}")
-        
+
         else:
-            raise ValueError(f"Unknown style: {style}. Use 'animated', 'static', 'official', or 'showdown'")
+            raise ValueError(f"Unknown style: {style}. Use 'animated', 'gen5static', 'static', 'official', or 'showdown'")
     
     @staticmethod
     def get_battle_sprites(pokemon1_name: str, pokemon1_dex: int,
