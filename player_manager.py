@@ -86,6 +86,7 @@ class PlayerManager:
         boon_stat: str = None,
         bane_stat: str = None,
         age: str = None,
+        birthday: str = None,
         home_region: str = None,
         bio: str = None,
     ) -> bool:
@@ -98,7 +99,11 @@ class PlayerManager:
             avatar_url: Avatar image URL
             boon_stat: Social stat to boost (Rank 2)
             bane_stat: Social stat to lower (Rank 0)
-        
+            age: Trainer age
+            birthday: Trainer birthday (MM/DD format)
+            home_region: Home region
+            bio: Short bio
+
         Returns:
             True if created successfully, False if already exists
         """
@@ -109,6 +114,7 @@ class PlayerManager:
             boon_stat=boon_stat,
             bane_stat=bane_stat,
             age=age,
+            birthday=birthday,
             home_region=home_region,
             bio=bio,
         )

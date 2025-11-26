@@ -250,6 +250,7 @@ class PlayerDatabase:
                 trainer_name TEXT NOT NULL,
                 avatar_url TEXT,
                 age TEXT,
+                birthday TEXT,
                 home_region TEXT,
                 bio TEXT,
                 current_location_id TEXT DEFAULT 'lights_district_central_plaza',
@@ -485,6 +486,13 @@ class PlayerDatabase:
         add_column('boon_stat', 'TEXT')
         add_column('bane_stat', 'TEXT')
 
+        # Registration info columns
+        add_column('age', 'TEXT')
+        add_column('birthday', 'TEXT')
+        add_column('home_region', 'TEXT')
+        add_column('bio', 'TEXT')
+        add_column('avatar_url', 'TEXT')
+
         # Ranks
         if add_column('heart_rank', 'INTEGER DEFAULT 1') and 'instinct_rank' in legacy_columns:
             cursor.execute("UPDATE trainers SET heart_rank = COALESCE(instinct_rank, 1)")
@@ -541,8 +549,8 @@ class PlayerDatabase:
 
     def create_trainer(self, discord_user_id: int, trainer_name: str,
                       avatar_url: str = None, boon_stat: str = None,
-                      bane_stat: str = None, age: str = None, home_region: str = None,
-                      bio: str = None) -> bool:
+                      bane_stat: str = None, age: str = None, birthday: str = None,
+                      home_region: str = None, bio: str = None) -> bool:
         """Create a new trainer profile"""
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -568,7 +576,7 @@ class PlayerDatabase:
                 """
                 INSERT INTO trainers (
                     discord_user_id, trainer_name, avatar_url,
-                    age, home_region, bio,
+                    age, birthday, home_region, bio,
                     boon_stat, bane_stat,
                     heart_rank, heart_points,
                     insight_rank, insight_points,
@@ -576,13 +584,14 @@ class PlayerDatabase:
                     fortitude_rank, fortitude_points,
                     will_rank, will_points,
                     stamina_current, stamina_max
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     discord_user_id,
                     trainer_name,
                     avatar_url,
                     age,
+                    birthday,
                     home_region,
                     bio,
                     boon_stat,
