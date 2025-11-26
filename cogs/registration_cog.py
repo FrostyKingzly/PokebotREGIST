@@ -20,6 +20,7 @@ class RegistrationData:
     def __init__(self, user_id: int):
         self.user_id = user_id
         self.trainer_name = None
+        self.pronouns = None
         self.age = None
         self.birthday = None
         self.home_region = None
@@ -46,6 +47,32 @@ class NameModal(Modal, title="Your Name"):
             title="📝 Registration Center",
             description=(
                 f"\"**{reg_data.trainer_name}**... That's a lovely name!\"\n\n"
+                "\"And what are your pronouns?\""
+            ),
+            color=discord.Color.blue()
+        )
+
+        view = PronounsStepView()
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+
+# Step 2: Pronouns Input
+class PronounsModal(Modal, title="Your Pronouns"):
+    pronouns = discord.ui.TextInput(
+        label="Pronouns",
+        placeholder="e.g., he/him, she/her, they/them, etc.",
+        required=True,
+        max_length=20,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        reg_data = interaction.client.temp_registration_data
+        reg_data.pronouns = self.pronouns.value.strip()
+
+        embed = discord.Embed(
+            title="📝 Registration Center",
+            description=(
+                f"\"**{reg_data.pronouns}**... Got it!\"\n\n"
                 "\"Perfect! And how old are you?\""
             ),
             color=discord.Color.blue()
@@ -55,7 +82,17 @@ class NameModal(Modal, title="Your Name"):
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
-# Step 2: Age Input
+class PronounsStepView(View):
+    def __init__(self):
+        super().__init__(timeout=300)
+
+    @discord.ui.button(label="Continue", style=discord.ButtonStyle.primary)
+    async def continue_button(self, interaction: discord.Interaction, button: Button):
+        modal = PronounsModal()
+        await interaction.response.send_modal(modal)
+
+
+# Step 3: Age Input
 class AgeModal(Modal, title="Your Age"):
     age = discord.ui.TextInput(
         label="Age",
@@ -354,6 +391,7 @@ class AvatarModal(Modal, title="Character Photo"):
         )
 
         embed.add_field(name="🏷️ Name", value=reg_data.trainer_name, inline=True)
+        embed.add_field(name="💬 Pronouns", value=reg_data.pronouns, inline=True)
         embed.add_field(name="🎂 Age", value=reg_data.age, inline=True)
         embed.add_field(name="🎉 Birthday", value=reg_data.birthday, inline=True)
         embed.add_field(name="🌍 Home Region", value=reg_data.home_region.title(), inline=True)
@@ -399,6 +437,7 @@ class AvatarStepView(View):
         )
 
         embed.add_field(name="🏷️ Name", value=reg_data.trainer_name, inline=True)
+        embed.add_field(name="💬 Pronouns", value=reg_data.pronouns, inline=True)
         embed.add_field(name="🎂 Age", value=reg_data.age, inline=True)
         embed.add_field(name="🎉 Birthday", value=reg_data.birthday, inline=True)
         embed.add_field(name="🌍 Home Region", value=reg_data.home_region.title(), inline=True)
@@ -454,6 +493,7 @@ class ConfirmationView(View):
             avatar_url=reg_data.avatar_url,
             boon_stat=reg_data.boon_stat,
             bane_stat=reg_data.bane_stat,
+            pronouns=reg_data.pronouns,
             age=reg_data.age,
             birthday=reg_data.birthday,
             home_region=reg_data.home_region,
@@ -469,9 +509,9 @@ class ConfirmationView(View):
             return
 
         description = (
-            "You've just taken your very first steps into the beautiful city of dreams.\n\n"
             f"Welcome to Reverie City, **{reg_data.trainer_name}**! ✨\n\n"
-            "\"Alright, looks like you're all set! Enjoy your stay, and may all your dreams come true in Reverie!\""
+            "\"Alright, looks like you're all set! Enjoy your stay, and may all your dreams come true in Reverie!\"\n\n"
+            "Use `/phone` to open your Rotom-Phone."
         )
 
         embed = discord.Embed(
@@ -499,6 +539,7 @@ class EditStepView(View):
 
         options = [
             discord.SelectOption(label="Name", value="name", emoji="🏷️"),
+            discord.SelectOption(label="Pronouns", value="pronouns", emoji="💬"),
             discord.SelectOption(label="Age", value="age", emoji="🎂"),
             discord.SelectOption(label="Birthday", value="birthday", emoji="🎉"),
             discord.SelectOption(label="Home Region", value="region", emoji="🌍"),
@@ -521,6 +562,9 @@ class EditStepView(View):
 
         if choice == "name":
             modal = NameModal()
+            await interaction.response.send_modal(modal)
+        elif choice == "pronouns":
+            modal = PronounsModal()
             await interaction.response.send_modal(modal)
         elif choice == "age":
             modal = AgeModal()

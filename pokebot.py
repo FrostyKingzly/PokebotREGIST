@@ -147,9 +147,9 @@ class PokemonBot(commands.Bot):
 # MAIN MENU COMMAND
 # ============================================================
 
-@discord.app_commands.command(name="menu", description="Open the main menu")
-async def menu_command(interaction: discord.Interaction):
-    """Main menu - hub for all bot features"""
+@discord.app_commands.command(name="phone", description="Open your Rotom-Phone")
+async def phone_command(interaction: discord.Interaction):
+    """Rotom-Phone - hub for all bot features"""
     
     # Check if player exists
     player_data = interaction.client.player_manager.get_player(interaction.user.id)
@@ -224,7 +224,7 @@ def main():
     bot = PokemonBot()
     
     # Register global commands
-    bot.tree.add_command(menu_command)
+    bot.tree.add_command(phone_command)
     
     try:
         bot.run(token)
