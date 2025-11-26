@@ -311,7 +311,36 @@ class SocialStatsView(View):
 
         # Check if both selections are complete
         if self.boon_stat and self.bane_stat:
-            await self.show_summary(interaction)
+            await self.show_avatar_prompt(interaction)
+
+    async def show_avatar_prompt(self, interaction: discord.Interaction):
+        """Prompt for avatar/photo URL"""
+        embed = discord.Embed(
+            title="📸 Character Photo",
+            description=(
+                "\"Lastly, would you like to submit a photo for your ID?\"\n\n"
+                "You can provide an image URL, or skip this step."
+            ),
+            color=discord.Color.blue(),
+        )
+
+        view = AvatarStepView()
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+
+# Avatar/Photo Step
+class AvatarModal(Modal, title="Character Photo"):
+    avatar_url = discord.ui.TextInput(
+        label="Character Photo URL (optional)",
+        placeholder="Paste a link to an image of your character...",
+        required=False,
+        max_length=200,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        reg_data = interaction.client.temp_registration_data
+        reg_data.avatar_url = self.avatar_url.value.strip() if self.avatar_url.value else None
+        await self.show_summary(interaction)
 
     async def show_summary(self, interaction: discord.Interaction):
         """Show registration summary"""
@@ -346,6 +375,51 @@ class SocialStatsView(View):
 
         view = ConfirmationView()
         await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+
+class AvatarStepView(View):
+    def __init__(self):
+        super().__init__(timeout=300)
+
+    @discord.ui.button(label="Add Photo", style=discord.ButtonStyle.primary)
+    async def photo_button(self, interaction: discord.Interaction, button: Button):
+        modal = AvatarModal()
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(label="Skip", style=discord.ButtonStyle.secondary)
+    async def skip_button(self, interaction: discord.Interaction, button: Button):
+        reg_data = interaction.client.temp_registration_data
+        reg_data.avatar_url = None
+
+        description = (
+            "\"Does this look right?\"\n\n"
+            "The clerk slips you a shiny new ID with your information."
+        )
+
+        embed = discord.Embed(
+            title="📋 Registration Summary",
+            description=description,
+            color=discord.Color.blurple(),
+        )
+
+        embed.add_field(name="🏷️ Name", value=reg_data.trainer_name, inline=True)
+        embed.add_field(name="🎂 Age", value=reg_data.age, inline=True)
+        embed.add_field(name="🎉 Birthday", value=reg_data.birthday, inline=True)
+        embed.add_field(name="🌍 Home Region", value=reg_data.home_region.title(), inline=True)
+
+        if reg_data.bio:
+            embed.add_field(name="📝 About You", value=reg_data.bio, inline=False)
+
+        stats_summary = f"Boon: **{reg_data.boon_stat.title()}** | Bane: **{reg_data.bane_stat.title()}**"
+        embed.add_field(name="📊 Social Stats", value=stats_summary, inline=False)
+
+        if reg_data.avatar_url:
+            embed.set_thumbnail(url=reg_data.avatar_url)
+
+        embed.set_footer(text="Choose an option below")
+
+        view = ConfirmationView()
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
 # Step 7: Final Confirmation
@@ -434,6 +508,7 @@ class EditStepView(View):
             discord.SelectOption(label="Home Region", value="region", emoji="🌍"),
             discord.SelectOption(label="Bio", value="bio", emoji="📝"),
             discord.SelectOption(label="Social Stats", value="stats", emoji="📊"),
+            discord.SelectOption(label="Photo", value="photo", emoji="📸"),
         ]
 
         select = Select(
@@ -488,6 +563,17 @@ class EditStepView(View):
                 color=discord.Color.blue(),
             )
             view = SocialStatsView()
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        elif choice == "photo":
+            embed = discord.Embed(
+                title="📸 Character Photo",
+                description=(
+                    "\"Would you like to submit a photo for your ID?\"\n\n"
+                    "You can provide an image URL, or skip this step."
+                ),
+                color=discord.Color.blue(),
+            )
+            view = AvatarStepView()
             await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
