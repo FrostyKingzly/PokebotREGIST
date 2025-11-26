@@ -85,6 +85,7 @@ class PlayerManager:
         avatar_url: str = None,
         boon_stat: str = None,
         bane_stat: str = None,
+        pronouns: str = None,
         age: str = None,
         birthday: str = None,
         home_region: str = None,
@@ -99,6 +100,7 @@ class PlayerManager:
             avatar_url: Avatar image URL
             boon_stat: Social stat to boost (Rank 2)
             bane_stat: Social stat to lower (Rank 0)
+            pronouns: Trainer pronouns
             age: Trainer age
             birthday: Trainer birthday (MM/DD format)
             home_region: Home region
@@ -113,6 +115,7 @@ class PlayerManager:
             avatar_url=avatar_url,
             boon_stat=boon_stat,
             bane_stat=bane_stat,
+            pronouns=pronouns,
             age=age,
             birthday=birthday,
             home_region=home_region,

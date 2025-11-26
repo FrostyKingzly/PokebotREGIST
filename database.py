@@ -249,6 +249,7 @@ class PlayerDatabase:
                 discord_user_id INTEGER PRIMARY KEY,
                 trainer_name TEXT NOT NULL,
                 avatar_url TEXT,
+                pronouns TEXT,
                 age TEXT,
                 birthday TEXT,
                 home_region TEXT,
@@ -487,6 +488,7 @@ class PlayerDatabase:
         add_column('bane_stat', 'TEXT')
 
         # Registration info columns
+        add_column('pronouns', 'TEXT')
         add_column('age', 'TEXT')
         add_column('birthday', 'TEXT')
         add_column('home_region', 'TEXT')
@@ -549,8 +551,8 @@ class PlayerDatabase:
 
     def create_trainer(self, discord_user_id: int, trainer_name: str,
                       avatar_url: str = None, boon_stat: str = None,
-                      bane_stat: str = None, age: str = None, birthday: str = None,
-                      home_region: str = None, bio: str = None) -> bool:
+                      bane_stat: str = None, pronouns: str = None, age: str = None,
+                      birthday: str = None, home_region: str = None, bio: str = None) -> bool:
         """Create a new trainer profile"""
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -576,7 +578,7 @@ class PlayerDatabase:
                 """
                 INSERT INTO trainers (
                     discord_user_id, trainer_name, avatar_url,
-                    age, birthday, home_region, bio,
+                    pronouns, age, birthday, home_region, bio,
                     boon_stat, bane_stat,
                     heart_rank, heart_points,
                     insight_rank, insight_points,
@@ -584,12 +586,13 @@ class PlayerDatabase:
                     fortitude_rank, fortitude_points,
                     will_rank, will_points,
                     stamina_current, stamina_max
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     discord_user_id,
                     trainer_name,
                     avatar_url,
+                    pronouns,
                     age,
                     birthday,
                     home_region,

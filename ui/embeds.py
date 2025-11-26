@@ -88,7 +88,7 @@ class EmbedBuilder:
     def main_menu(trainer: Trainer, rank_manager=None) -> discord.Embed:
         """Create the main menu embed."""
         embed = discord.Embed(
-            title=f"{trainer.trainer_name}'s Menu",
+            title=f"{trainer.trainer_name}'s Phone",
             description="Select an option below to continue your journey!",
             color=EmbedBuilder.PRIMARY_COLOR
         )
@@ -175,19 +175,28 @@ class EmbedBuilder:
         )
         
         # Trainer info
-        # Trainer info
         info_text = f"**Name:** {trainer.trainer_name}\n"
+
+        if getattr(trainer, "pronouns", None):
+            info_text += f"**Pronouns:** {trainer.pronouns}\n"
 
         if getattr(trainer, "age", None):
             info_text += f"**Age:** {trainer.age}\n"
 
+        if getattr(trainer, "birthday", None):
+            info_text += f"**Birthday:** {trainer.birthday}\n"
+
         if getattr(trainer, "home_region", None):
-            info_text += f"**Home Region:** {trainer.home_region}\n"
+            info_text += f"**Home Region:** {trainer.home_region.title()}\n"
 
         info_text += f"**Location:** {trainer.current_location_id.replace('_', ' ').title()}\n"
         info_text += f"**Rank:** {trainer.get_rank_display()}\n"
         info_text += EmbedBuilder.format_rank_progress(trainer) + "\n"
         info_text += f"**Money:** ${trainer.money:,}"
+
+        if getattr(trainer, "bio", None):
+            info_text += f"\n\n*{trainer.bio}*"
+
         embed.add_field(
             name="👤 Profile",
             value=info_text,
