@@ -538,89 +538,90 @@ class PlayerDatabase:
     # ============================================================
     # TRAINER OPERATIONS
     # ============================================================
-    
-def create_trainer(self, discord_user_id: int, trainer_name: str, 
-                  avatar_url: str = None, boon_stat: str = None, 
-                  bane_stat: str = None, age: str = None, home_region: str = None, 
-                  bio: str = None) -> bool:
-    """Create a new trainer profile"""
-    conn = self.get_connection()
-    cursor = conn.cursor()
 
-    try:
-        stats_payload: Dict[str, int] = {}
-        for stat_key in SOCIAL_STAT_ORDER:
-            cap = get_stat_cap(stat_key, boon_stat, bane_stat)
-            base_rank = 1
-            if stat_key == boon_stat:
-                base_rank = 2
-            elif stat_key == bane_stat:
-                base_rank = 0
+    def create_trainer(self, discord_user_id: int, trainer_name: str,
+                      avatar_url: str = None, boon_stat: str = None,
+                      bane_stat: str = None, age: str = None, home_region: str = None,
+                      bio: str = None) -> bool:
+        """Create a new trainer profile"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
 
-            # Default starting points: 50 per rank
-            stats_payload[f"{stat_key}_rank"] = base_rank
-            stats_payload[f"{stat_key}_points"] = base_rank * 50
+        try:
+            stats_payload: Dict[str, int] = {}
+            for stat_key in SOCIAL_STAT_ORDER:
+                cap = get_stat_cap(stat_key, boon_stat, bane_stat)
+                base_rank = 1
+                if stat_key == boon_stat:
+                    base_rank = 2
+                elif stat_key == bane_stat:
+                    base_rank = 0
 
-        fortitude_rank = stats_payload['fortitude_rank']
-        stamina_max = calculate_max_stamina(fortitude_rank)
+                # Default starting points: 50 per rank
+                stats_payload[f"{stat_key}_rank"] = base_rank
+                stats_payload[f"{stat_key}_points"] = base_rank * 50
 
-        cursor.execute(
-            """
-            INSERT INTO trainers (
-                discord_user_id, trainer_name, avatar_url,
-                age, home_region, bio,
-                boon_stat, bane_stat,
-                heart_rank, heart_points,
-                insight_rank, insight_points,
-                charisma_rank, charisma_points,
-                fortitude_rank, fortitude_points,
-                will_rank, will_points,
-                stamina_current, stamina_max
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                discord_user_id,
-                trainer_name,
-                avatar_url,
-                age,
-                home_region,
-                bio,
-                boon_stat,
-                bane_stat,
-                stats_payload['heart_rank'],
-                stats_payload['heart_points'],
-                stats_payload['insight_rank'],
-                stats_payload['insight_points'],
-                stats_payload['charisma_rank'],
-                stats_payload['charisma_points'],
-                stats_payload['fortitude_rank'],
-                stats_payload['fortitude_points'],
-                stats_payload['will_rank'],
-                stats_payload['will_points'],
-                stamina_max,
-                stamina_max,
-            ),
-        )
+            fortitude_rank = stats_payload['fortitude_rank']
+            stamina_max = calculate_max_stamina(fortitude_rank)
 
-        conn.commit()
-        return True
-    except sqlite3.IntegrityError:
-        return False  # Trainer already exists
-    finally:
-        conn.close()
+            cursor.execute(
+                """
+                INSERT INTO trainers (
+                    discord_user_id, trainer_name, avatar_url,
+                    age, home_region, bio,
+                    boon_stat, bane_stat,
+                    heart_rank, heart_points,
+                    insight_rank, insight_points,
+                    charisma_rank, charisma_points,
+                    fortitude_rank, fortitude_points,
+                    will_rank, will_points,
+                    stamina_current, stamina_max
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    discord_user_id,
+                    trainer_name,
+                    avatar_url,
+                    age,
+                    home_region,
+                    bio,
+                    boon_stat,
+                    bane_stat,
+                    stats_payload['heart_rank'],
+                    stats_payload['heart_points'],
+                    stats_payload['insight_rank'],
+                    stats_payload['insight_points'],
+                    stats_payload['charisma_rank'],
+                    stats_payload['charisma_points'],
+                    stats_payload['fortitude_rank'],
+                    stats_payload['fortitude_points'],
+                    stats_payload['will_rank'],
+                    stats_payload['will_points'],
+                    stamina_max,
+                    stamina_max,
+                ),
+            )
+
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            return False  # Trainer already exists
+        finally:
+            conn.close()
+
     def get_trainer(self, discord_user_id: int) -> Optional[Dict]:
         """Get trainer by Discord ID"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute("SELECT * FROM trainers WHERE discord_user_id = ?", (discord_user_id,))
         row = cursor.fetchone()
         conn.close()
-        
+
         if row:
             return dict(row)
         return None
-    
+
     def trainer_exists(self, discord_user_id: int) -> bool:
         """Check if trainer exists"""
         return self.get_trainer(discord_user_id) is not None
